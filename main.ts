@@ -1,12 +1,12 @@
 // Tiny stack VM for make.fun tiny-stack-vm-01-run-20261122. Follows the kit
-// ISA exactly as the reference VM does (wrapping 32-bit math, unsigned ops,
-// DIV/MOD edges, 5-bit shifts, PUSH8 sign extension, all ten traps).
+// ISA exactly as the reference VM does (wrapping math, unsigned ops, shifts,
+// DIV/MOD edges, PUSH8 sign extension, all ten traps).
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const IN_DIR = process.env.MAKEFUN_INPUT_DIR ?? '/input';
 const OUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-// Decode tables: immediate length, values popped, values pushed per opcode.
+// Decode tables: immediate length, pops, pushes per opcode.
 // KNOWN marks real opcodes; anything else traps 5.
 const IMM = new Uint8Array(256), POPN = new Uint8Array(256), PUSHN = new Uint8Array(256), KNOWN = new Uint8Array(256);
 for (const [o, i, p, u] of [
@@ -24,7 +24,7 @@ for (let o = 0x10; o <= 0x22; o++) {
 }
 
 const DIG = new Uint8Array(12); // decimal digits, least first
-// Appends decimal v to out at ol; new length, or -1 past the 65,536 limit.
+// Appends decimal v; new length, or -1 past the 65,536 limit.
 function putNum(out, ol, v) {
   let x = v, neg = false;
   if (x < 0) { neg = true; x = -x; }
